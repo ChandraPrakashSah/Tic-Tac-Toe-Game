@@ -18,22 +18,33 @@ let obj = [
     Dig2o: 0,
     player1: "X",
     player2: "O",
+    result: "",
+    copy: 0,
   },
 ];
 
+// console.log(obj)
 //  local storage
 
 let data = JSON.parse(localStorage.getItem("myobj"));
-if (data) {
+//clear local storage
+var clear = document.getElementById("rs");
+clear.style.display = "none";
+clear.onclick = function () {
+  localStorage.removeItem("myobj");
+  localStorage.removeItem("copy");
+  location.reload();
+};
+if (data != null) {
   data.forEach((element) => {
     obj.push(element);
     game(element);
-    
-    
+    clear.style.display = "";
   });
-
 }
-
+if (data) {
+  obj.splice(0, 1);
+}
 
 ///   start the game
 function onStart() {
@@ -42,9 +53,10 @@ function onStart() {
     obj[0].arr[i] = [];
   }
   game(obj[0]);
+  localStorage.setItem("myobj", JSON.stringify(obj));
 }
 handleDelete = (ev, id, x) => {
-  // obj = obj.filter((m) => m.id !== id);
+  obj = obj.filter((m) => m.id !== id);
 
   // obj.splice(id, 1);
   const a = document.getElementById(`_inner${id}`);
@@ -65,9 +77,6 @@ function game(curr) {
   let container = document.createElement("div");
   container.setAttribute("id", `_inner${curr.id}`);
   container2.appendChild(container);
-  // let x = document.createElement("p");
-  // x.setAttribute("id", `in${curr.id}`);
-  // container2.append(x);
   const delBtn = document.createElement("button");
   delBtn.addEventListener("click", (ev) => {
     handleDelete(ev, curr.id, x);
@@ -75,16 +84,17 @@ function game(curr) {
   delBtn.innerText = "Delete";
   container2.appendChild(delBtn);
 
-  //
+  // p tag for winner
   let x = document.createElement("p");
   x.setAttribute("id", `in${curr.id}`);
   container2.append(x);
   //
 
-  let i = document.getElementById(`_inner${curr.id}`);
-  i.style.display = "flex";
-  i.style.justifyContent = "center";
-  i.style.marginTop = "10px";
+  document.getElementById(`_inner${curr.id}`).style.cssText = `
+    display :flex;
+    justifyContent :center;
+     marginTop :10px";
+  `;
 
   /***create multidiamensional arr */
   // for (let i = 0; i < size; i++) {
@@ -101,12 +111,13 @@ function game(curr) {
       c.classList.add("box2");
 
       // print array after refresh
-      if (curr.arr[j][i]){ 
-      c.innerHTML = curr.arr[j][i];
-    
-    }
-
-
+      if (curr.arr[j][i]) {
+        c.innerHTML = curr.arr[j][i];
+      }
+      x.innerHTML = curr.result;
+      if (curr.result != "") {
+        cbtn.disabled = true;
+      }
       a.appendChild(c);
       //********* */
       c.setAttribute("id", `div_${curr.id + "_" + j + "" + "_" + i}`);
@@ -114,18 +125,32 @@ function game(curr) {
       c.onclick = function () {
         getid = document.getElementById(this.id);
         if (getid.innerHTML == "" && x.innerHTML == "") {
-          if (obj[curr.id].count % 2 == 0) {
+          if (curr.count % 2 == 0) {
             getid.innerHTML = player1;
-            obj[curr.id].count++;
-            stokePlayer(curr, x, obj[curr.id].player1, j, i, obj[curr.id].count);
+            curr.count++;
+            stokePlayer(
+              curr,
+              x,
+              curr.player1,
+              j,
+              i,
+             curr.count
+            );
           } else {
             getid.innerHTML = player2;
-            obj[curr.id].count++;
-            stokePlayer(curr, x, obj[curr.id].player2, j, i, obj[curr.id].count);
+            curr.count++;
+            stokePlayer(
+              curr,
+              x,
+              curr.player2,
+              j,
+              i,
+              curr.count
+            );
           }
-          if (x.innerHTML != "") {
-            document.getElementById("cbtn").disabled = true;
-          }
+          // if (curr.result != "") {
+          //   document.getElementById("cbtn").disabled = true;
+          // }
         }
       };
     }
@@ -134,35 +159,39 @@ function game(curr) {
 
 //adding player1 and  player2 in multidimensional array
 function stokePlayer(curr, x, player, j, i, count) {
-  obj[curr.id].arr[j][i] = player;
+ curr.arr[j][i] = player;
 
   // localStorage.setItem("myobj", JSON.stringify(obj));
   console.log(obj);
   // Digonal 1
-  if (j == i && obj[curr.id].arr[j][i] == player1) {
-    obj[curr.id].Digx++;
-    if (obj[curr.id].Digx == size) {
-      x.innerHTML = `${player1} has won`;
+  if (j == i && curr.arr[j][i] == player1) {
+    curr.Digx++;
+    if (curr.Digx == size) {
+      curr.result = `${player1} has won`;
+      x.innerHTML = curr.result;
     }
   }
-  if (j == i && obj[curr.id].arr[j][i] == player2) {
-    obj[curr.id].Digo++;
-    if (obj[curr.id].Digo == size) {
-      x.innerHTML = `${player2} has won`;
+  if (j == i && curr.arr[j][i] == player2) {
+   curr.Digo++;
+    if (curr.Digo == size) {
+      curr.result = `${player2} has won`;
+      x.innerHTML = curr.result;
     }
   }
   //  Digonal 2
 
-  if (j + i == size - 1 && obj[curr.id].arr[j][i] == player1) {
-    obj[curr.id].Dig2x++;
-    if (obj[curr.id].Dig2x == size) {
-      x.innerHTML = `${player1} has won`;
+  if (j + i == size - 1 && curr.arr[j][i] == player1) {
+    curr.Dig2x++;
+    if (curr.Dig2x == size) {
+      curr.result = `${player1} has won`;
+      x.innerHTML = curr.result;
     }
   }
-  if (j + i == size - 1 && obj[curr.id].arr[j][i] == player2) {
-    obj[curr.id].Dig2o++;
-    if (obj[curr.id].Dig2o == size) {
-      x.innerHTML = `${player2} has won`;
+  if (j + i == size - 1 && curr.arr[j][i] == player2) {
+    curr.Dig2o++;
+    if (curr.Dig2o == size) {
+     curr.result = `${player2} has won`;
+      x.innerHTML = curr.result;
     }
   }
 
@@ -173,41 +202,54 @@ function stokePlayer(curr, x, player, j, i, count) {
     let Colo = 0;
     for (let n = 0; n < size; n++) {
       /*******Row */
-      if (obj[curr.id].arr[m][n] == player1) {
+      if (curr.arr[m][n] == player1) {
         Rowx++;
         if (Rowx == size) {
-          x.innerHTML = `${player1} has won`;
+          curr.result = `${player1} has won`;
+          x.innerHTML = curr.result;
         }
       }
-      if (obj[curr.id].arr[m][n] == player2) {
+      if (curr.arr[m][n] == player2) {
         Rowo++;
         if (Rowo == size) {
-          x.innerHTML = `${player2} has won`;
+          curr.result = `${player2} has won`;
+          x.innerHTML = curr.result;
         }
       }
       /*******Column */
 
-      if (obj[curr.id].arr[n][m] == player1) {
+      if (curr.arr[n][m] == player1) {
         Colx++;
         if (Colx == size) {
-          x.innerHTML = `${player1} has won`;
+          obj[curr.id].result = `${player1} has won`;
+          x.innerHTML = curr.result;
         }
-      } else if (obj[curr.id].arr[n][m] == player2) {
+      } else if (curr.arr[n][m] == player2) {
         Colo++;
         if (Colo == size) {
-          x.innerHTML = `${player2} has won`;
+          curr.result = `${player2} has won`;
+          x.innerHTML = curr.result;
         }
       }
       if (count === size * size && x.innerHTML == "") {
-        x.innerHTML = "Game Tie";
+        curr.result = "Game Tie";
+        x.innerHTML = curr.result;
       }
     }
   }
+
   localStorage.setItem("myobj", JSON.stringify(obj));
+  if (curr.result != "") {
+    document.getElementById("cbtn").disabled = true;
+  }
 }
-// copy the game
+
+///////////////////////copy the game//////////////////////////
 function copyGame() {
+  let copy = JSON.parse(localStorage.getItem("copy"));
   copy++;
+
+  localStorage.setItem("copy", JSON.stringify(copy));
   let copyobj = {
     id: copy,
     count: 0,
@@ -218,40 +260,36 @@ function copyGame() {
     Dig2o: 0,
     player1: "X",
     player2: "O",
+    result: "",
+    copy: 0,
   };
+  let n = obj.length;
+  obj.push(copyobj);
 
-    obj.push(copyobj);
-
+  console.log(copy);
   //  previous state copy
-  obj[copy].count = obj[copy - 1].count;
-  obj[copy].Digx = obj[copy - 1].Digx;
-  obj[copy].Digo = obj[copy - 1].Digo;
-  obj[copy].Dig2x = obj[copy - 1].Dig2x;
-  obj[copy].Dig2o = obj[copy - 1].Dig2o;
 
-  // size = document.getElementById("input").value;
+  obj[n].count = obj[n - 1].count;
+  obj[n].Digx = obj[n - 1].Digx;
+  obj[n].Digo = obj[n - 1].Digo;
+  obj[n].Dig2x = obj[n - 1].Dig2x;
+  obj[n].Dig2o = obj[n - 1].Dig2o;
+
   for (let i = 0; i < size; i++) {
-    obj[copy].arr[i] = [];
+    obj[n].arr[i] = [];
   }
 
-  game(obj[copy]);
+  game(obj[n]);
 
-  // get dat from localstorage
-  let data1 = JSON.parse(localStorage.getItem("myobj"));
-
-  for (let i = 0; i < obj[copy - 1].arr.length; i++) {
-    for (let j = 0; j < obj[copy - 1].arr.length; j++) {
-      if (obj[copy - 1].arr[j][i] != undefined) {
-        let idc = document.getElementById(
-          `div_${copy + "_" + j + "" + "_" + i}`
-        );
-        obj[copy].arr[j][i] = obj[copy - 1].arr[j][i];
-        idc.innerHTML = obj[copy - 1].arr[j][i];
+  for (let i = 0; i < obj[n - 1].arr.length; i++) {
+    for (let j = 0; j < obj[n - 1].arr.length; j++) {
+      if (obj[n - 1].arr[j][i] != undefined) {
+        let idc = document.getElementById(`div_${n + "_" + j + "" + "_" + i}`);
+        obj[n].arr[j][i] = obj[n - 1].arr[j][i];
+        idc.innerHTML = obj[n - 1].arr[j][i];
       }
     }
   }
+
   localStorage.setItem("myobj", JSON.stringify(obj));
-
-
 }
-
