@@ -1,12 +1,10 @@
 let player1 = "X";
 let player2 = "O";
-let copy = 0;
 let getid;
 let cbtn = document.getElementById("cbtn");
 cbtn.disabled = true;
 let container2 = document.getElementById("container2");
-var size;
-
+var size=JSON.parse(localStorage.getItem('size'));
 let obj = [
   {
     id: 0,
@@ -19,20 +17,19 @@ let obj = [
     player1: "X",
     player2: "O",
     result: "",
-    copy: 0,
+    
   },
 ];
 
-// console.log(obj)
 //  local storage
-
 let data = JSON.parse(localStorage.getItem("myobj"));
 //clear local storage
 var clear = document.getElementById("rs");
 clear.style.display = "none";
 clear.onclick = function () {
   localStorage.removeItem("myobj");
-  localStorage.removeItem("copy");
+  localStorage.removeItem("size");
+  
   location.reload();
 };
 if (data != null) {
@@ -47,8 +44,12 @@ if (data) {
 }
 
 ///   start the game
+
 function onStart() {
   size = document.getElementById("input").value;
+  localStorage.setItem("size",JSON.stringify(size));
+  size=JSON.parse(localStorage.getItem('size'));
+
   for (let i = 0; i < size; i++) {
     obj[0].arr[i] = [];
   }
@@ -62,9 +63,7 @@ handleDelete = (ev, id, x) => {
   const a = document.getElementById(`_inner${id}`);
   a.remove();
   ev.target.remove();
-  // console.log(obj);
   x.remove();
-
   localStorage.setItem("myobj", JSON.stringify(obj));
 };
 
@@ -73,7 +72,8 @@ function game(curr) {
   cbtn.disabled = false;
   document.getElementById("btn").disabled = true;
 
-  size = document.getElementById("input").value;
+  // size = document.getElementById("input").value;
+  size=JSON.parse(localStorage.getItem('size'));
   let container = document.createElement("div");
   container.setAttribute("id", `_inner${curr.id}`);
   container2.appendChild(container);
@@ -96,17 +96,13 @@ function game(curr) {
      marginTop :10px";
   `;
 
-  /***create multidiamensional arr */
-  // for (let i = 0; i < size; i++) {
-  //   curr.arr[i] = [];
-  // }
-
-  /******** */
+  /***create matrix*/
   for (let i = 0; i < size; i++) {
+    //*******create row*********//
     var a = document.createElement("div");
     container.appendChild(a);
-    /*************/
     for (let j = 0; j < size; j++) {
+       //****create column****//
       var c = document.createElement("div");
       c.classList.add("box2");
 
@@ -119,38 +115,24 @@ function game(curr) {
         cbtn.disabled = true;
       }
       a.appendChild(c);
-      //********* */
+      //*****set id for each matrix**** */
       c.setAttribute("id", `div_${curr.id + "_" + j + "" + "_" + i}`);
-
+      //*******function for click on each box *******//
       c.onclick = function () {
         getid = document.getElementById(this.id);
         if (getid.innerHTML == "" && x.innerHTML == "") {
           if (curr.count % 2 == 0) {
             getid.innerHTML = player1;
             curr.count++;
-            stokePlayer(
-              curr,
-              x,
-              curr.player1,
-              j,
-              i,
-             curr.count
-            );
+            stokePlayer(curr, x, curr.player1, j, i, curr.count);
           } else {
             getid.innerHTML = player2;
             curr.count++;
-            stokePlayer(
-              curr,
-              x,
-              curr.player2,
-              j,
-              i,
-              curr.count
-            );
+            stokePlayer(curr, x, curr.player2, j, i, curr.count);
           }
-          // if (curr.result != "") {
-          //   document.getElementById("cbtn").disabled = true;
-          // }
+          if (curr.result != "") {
+            document.getElementById("cbtn").disabled = true;
+          }
         }
       };
     }
@@ -159,11 +141,8 @@ function game(curr) {
 
 //adding player1 and  player2 in multidimensional array
 function stokePlayer(curr, x, player, j, i, count) {
- curr.arr[j][i] = player;
-
-  // localStorage.setItem("myobj", JSON.stringify(obj));
-  console.log(obj);
-  // Digonal 1
+  curr.arr[j][i] = player;
+  // Digonal1 for winner condition
   if (j == i && curr.arr[j][i] == player1) {
     curr.Digx++;
     if (curr.Digx == size) {
@@ -172,14 +151,13 @@ function stokePlayer(curr, x, player, j, i, count) {
     }
   }
   if (j == i && curr.arr[j][i] == player2) {
-   curr.Digo++;
+    curr.Digo++;
     if (curr.Digo == size) {
       curr.result = `${player2} has won`;
       x.innerHTML = curr.result;
     }
   }
-  //  Digonal 2
-
+  //  Digonal2  for winner condition
   if (j + i == size - 1 && curr.arr[j][i] == player1) {
     curr.Dig2x++;
     if (curr.Dig2x == size) {
@@ -190,7 +168,7 @@ function stokePlayer(curr, x, player, j, i, count) {
   if (j + i == size - 1 && curr.arr[j][i] == player2) {
     curr.Dig2o++;
     if (curr.Dig2o == size) {
-     curr.result = `${player2} has won`;
+      curr.result = `${player2} has won`;
       x.innerHTML = curr.result;
     }
   }
@@ -201,7 +179,7 @@ function stokePlayer(curr, x, player, j, i, count) {
     let Colx = 0;
     let Colo = 0;
     for (let n = 0; n < size; n++) {
-      /*******Row */
+      /*******Row  wise for winner condition */
       if (curr.arr[m][n] == player1) {
         Rowx++;
         if (Rowx == size) {
@@ -216,12 +194,12 @@ function stokePlayer(curr, x, player, j, i, count) {
           x.innerHTML = curr.result;
         }
       }
-      /*******Column */
+      /*******Column wise for winner condition*/
 
       if (curr.arr[n][m] == player1) {
         Colx++;
         if (Colx == size) {
-          obj[curr.id].result = `${player1} has won`;
+          curr.result = `${player1} has won`;
           x.innerHTML = curr.result;
         }
       } else if (curr.arr[n][m] == player2) {
@@ -246,12 +224,8 @@ function stokePlayer(curr, x, player, j, i, count) {
 
 ///////////////////////copy the game//////////////////////////
 function copyGame() {
-  let copy = JSON.parse(localStorage.getItem("copy"));
-  copy++;
-
-  localStorage.setItem("copy", JSON.stringify(copy));
   let copyobj = {
-    id: copy,
+    id: obj.length,
     count: 0,
     arr: [],
     Digx: 0,
@@ -261,14 +235,11 @@ function copyGame() {
     player1: "X",
     player2: "O",
     result: "",
-    copy: 0,
   };
   let n = obj.length;
   obj.push(copyobj);
 
-  console.log(copy);
   //  previous state copy
-
   obj[n].count = obj[n - 1].count;
   obj[n].Digx = obj[n - 1].Digx;
   obj[n].Digo = obj[n - 1].Digo;
@@ -280,7 +251,7 @@ function copyGame() {
   }
 
   game(obj[n]);
-
+       ////*****print previous state on matrix********/
   for (let i = 0; i < obj[n - 1].arr.length; i++) {
     for (let j = 0; j < obj[n - 1].arr.length; j++) {
       if (obj[n - 1].arr[j][i] != undefined) {
@@ -290,6 +261,5 @@ function copyGame() {
       }
     }
   }
-
   localStorage.setItem("myobj", JSON.stringify(obj));
 }
